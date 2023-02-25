@@ -1,20 +1,22 @@
-package com.example.simpleapp.ui
+package com.example.simpleapp.ui.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import com.example.simpleapp.R
 import com.example.simpleapp.database.AppDataBase
+import com.example.simpleapp.database.dao.MovieDao
 import com.example.simpleapp.database.entities.MovieEntity
 import com.example.simpleapp.databinding.ActivityMainBinding
-import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val DATABASE_NAME = "movies_database"
+    @Inject lateinit var movieDao: MovieDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,13 +27,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun addMovie(){
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDataBase::class.java,
-            DATABASE_NAME
-        ).build()
-        val movieDao = db.movieDao()
-
         val name = binding.etMovieName.text.toString()
         val rating =  binding.etMovieRating.text.toString().toInt()
         val movie = MovieEntity(
@@ -45,19 +40,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showLastMovie(){
-        val db = Room.databaseBuilder(
-            applicationContext,
-            AppDataBase::class.java,
-            DATABASE_NAME
-        ).build()
-        val movieDao = db.movieDao()
-
         lifecycleScope.launch{
             val movies = movieDao.getAllMovies()
             runOnUiThread{
-                Toast.makeText(binding.layout.context, "${movies.last().name} Registered movie", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "${movies.last().name} Registered movie", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 }
